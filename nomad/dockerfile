@@ -1,13 +1,15 @@
 FROM ubuntu:18.04
 
 ARG CONSUL_VERSION=1.8.0
-ARG CONSUL_URL=https://releases.hashicorp.com/consul
+ARG NOMAD_VERSION=0.9.0
+ARG RELEASE_URL=https://releases.hashicorp.com
 
 RUN apt-get update && \
     apt-get install -y curl unzip systemd
 
 WORKDIR /tmp
-RUN curl --silent --remote-name ${CONSUL_URL}/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip && \
+# Install Consul
+RUN curl --silent --remote-name ${RELEASE_URL}/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip && \
     unzip consul_${CONSUL_VERSION}_linux_amd64.zip && \
     chown root:root consul && \
     mv consul /usr/local/bin/ && \
@@ -15,8 +17,16 @@ RUN curl --silent --remote-name ${CONSUL_URL}/${CONSUL_VERSION}/consul_${CONSUL_
     useradd --system --home /etc/consul.d --shell /bin/false consul && \
     mkdir --parents /opt/consul && \
     chown --recursive consul:consul /opt/consul
+# Install Nomad
+RUN curl --silent --remote-name ${RELEASE_URL}/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip && \
+    unzip nomad_${NOMAD_VERSION}_linux_amd64.zip && \
+    chown root:root nomad && \
+    mv nomad /usr/local/bin/ && \
+    nomad version && \
+    mkdir --parents /opt/nomad
 
 COPY consul.hcl /etc/consul.d/consul.hcl
+COPY server.hcl /etc/nomad.d/server.hcl
 COPY docker-start.sh /root/
 RUN chmod +x /root/docker-start.sh
 

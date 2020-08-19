@@ -68,6 +68,20 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       consul: {}
+
+  nomad_server:
+    container_name: nomad_server
+    build:
+      dockerfile: dockerfile
+      context: ./nomad
+    ports:
+      - 4646:4646
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - $PWD/nomad/data/server:/opt/nomad
+    networks:
+      consul:
+        ipv4_address: 172.26.0.10
 networks:
   consul:
     name: consul

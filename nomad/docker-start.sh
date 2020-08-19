@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 /usr/local/bin/consul agent -config-dir=/etc/consul.d &
+/usr/local/bin/nomad agent -config /etc/nomad.d -dev &
 
 function term {
   echo "Caught termination request, waiting for processes to exit."
@@ -37,6 +38,16 @@ while sleep 60; do
     exit 1
   else
     echo "Consul is running."
+  fi
+
+  ps aux | grep nomad | grep -q -v grep
+  NOMAD_STATUS=$?
+
+  if [ $NOMAD_STATUS -ne 0 ]; then
+    echo "Nomad is not running, exiting."
+    exit 1
+  else
+    echo "Nomad is running."
   fi
 
 done
