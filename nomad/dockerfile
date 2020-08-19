@@ -1,0 +1,25 @@
+FROM ubuntu:18.04
+
+ARG CONSUL_VERSION=1.8.0
+ARG CONSUL_URL=https://releases.hashicorp.com/consul
+
+RUN apt-get update && \
+    apt-get install -y curl unzip systemd
+
+WORKDIR /tmp
+RUN curl --silent --remote-name ${CONSUL_URL}/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip && \
+    unzip consul_${CONSUL_VERSION}_linux_amd64.zip && \
+    chown root:root consul && \
+    mv consul /usr/local/bin/ && \
+    consul --version && \
+    useradd --system --home /etc/consul.d --shell /bin/false consul && \
+    mkdir --parents /opt/consul && \
+    chown --recursive consul:consul /opt/consul
+
+COPY consul.hcl /etc/consul.d/consul.hcl
+COPY docker-start.sh /root/
+RUN chmod +x /root/docker-start.sh
+
+WORKDIR /root
+
+CMD [ "./docker-start.sh" ]
